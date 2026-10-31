@@ -59,10 +59,10 @@ func (pm *pollingMon) isCloudRun() bool {
 func (pm *pollingMon) Receive() (message, error) {
 	d := 10 * time.Second
 	if runtime.GOOS == "android" {
-		// We'll have Android notify the link monitor to wake up earlier,
-		// so this can go very slowly there, to save battery.
-		// https://github.com/tailscale/tailscale/issues/1427
-		d = 10 * time.Minute
+		// FlClash embeds tsnet without injecting Android network-change events.
+		// Poll more frequently so a Wi-Fi/cellular handover is noticed quickly.
+		// Upstream relies on libtailscale calling netmon.InjectEvent instead.
+		d = 30 * time.Second
 	} else if pm.isCloudRun() {
 		// Cloud Run routes never change at runtime. the containers are killed within
 		// 15 minutes by default, set the interval long enough to be effectively infinite.
