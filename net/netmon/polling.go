@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"errors"
 	"os"
-	"runtime"
 	"sync"
 	"time"
 
@@ -58,12 +57,7 @@ func (pm *pollingMon) isCloudRun() bool {
 
 func (pm *pollingMon) Receive() (message, error) {
 	d := 10 * time.Second
-	if runtime.GOOS == "android" {
-		// FlClash embeds tsnet without injecting Android network-change events.
-		// Poll more frequently so a Wi-Fi/cellular handover is noticed quickly.
-		// Upstream relies on libtailscale calling netmon.InjectEvent instead.
-		d = 30 * time.Second
-	} else if pm.isCloudRun() {
+	if pm.isCloudRun() {
 		// Cloud Run routes never change at runtime. the containers are killed within
 		// 15 minutes by default, set the interval long enough to be effectively infinite.
 		pm.logf("monitor polling: Cloud Run detected, reduce polling interval to 24h")
